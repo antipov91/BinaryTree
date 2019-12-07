@@ -19,6 +19,8 @@ namespace Tests
 
             var results = runner.Run(builder.Contexts().Build());
 
+            Console.ReadKey();
+
             Environment.Exit(results.Failures().Count());
         }
     }

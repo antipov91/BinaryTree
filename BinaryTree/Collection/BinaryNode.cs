@@ -20,12 +20,12 @@ namespace BinaryTreeCollection.Collection
         public BinaryNode<T> Add(T value, int index, Func<T, T, int> сompareTo)
         {
             var newRoot = this;
-            if (сompareTo(Value, value) <= 0)
+            if (сompareTo(value, Value) <= 0)
             {
                 LeftNode = AddToSubTree(LeftNode, value, index, сompareTo);
                 if (GetHeightDifference() == 2)
                 {
-                    if (сompareTo(LeftNode.Value, value) <= 0)
+                    if (сompareTo(value, LeftNode.Value) <= 0)
                         newRoot = RotateRight();
                     else
                         newRoot = RotateLeftRight();
@@ -36,7 +36,59 @@ namespace BinaryTreeCollection.Collection
                 RightNode = AddToSubTree(RightNode, value, index, сompareTo);
                 if (GetHeightDifference() == -2)
                 {
-                    if (сompareTo(RightNode.Value, value) > 0)
+                    if (сompareTo(value, RightNode.Value) > 0)
+                        newRoot = RotateLeft();
+                    else
+                        newRoot = RotateRightLeft();
+                }
+            }
+            newRoot.ComputeHeight();
+            return newRoot;
+        }
+
+        public BinaryNode<T> Remove(T value, Func<T, T, int> сompareTo)
+        {
+            var newRoot = this;
+            if (сompareTo(value, Value) < 0)
+            {
+                LeftNode = RemoveFromParent(LeftNode, value, сompareTo);
+                if (GetHeightDifference() == -2)
+                {
+                    if (RightNode.GetHeightDifference() <= 0)
+                        newRoot = RotateLeft();
+                    else
+                        newRoot = RotateRightLeft();
+                }
+            }
+            else if (сompareTo(value, Value) > 0)
+            {
+                RightNode = RemoveFromParent(RightNode, value, сompareTo);
+                if (GetHeightDifference() == 2)
+                {
+                    if (LeftNode.GetHeightDifference() >= 0)
+                        newRoot = RotateRight();
+                    else
+                        newRoot = RotateLeftRight();
+                }
+            }
+            else
+            {
+                if (ReferenceEquals(LeftNode, null))
+                    return RightNode;
+
+                var child = LeftNode;
+                while (!ReferenceEquals(child.RightNode, null))
+                    return child.RightNode;
+
+                var childIndex = child.Index;
+                var childValue = child.Value;
+                LeftNode = RemoveFromParent(LeftNode, childValue, сompareTo);
+                Value = childValue;
+                Index = childIndex;
+
+                if (GetHeightDifference() == -2)
+                {
+                    if (RightNode.GetHeightDifference() <= 0)
                         newRoot = RotateLeft();
                     else
                         newRoot = RotateRightLeft();
@@ -136,13 +188,22 @@ namespace BinaryTreeCollection.Collection
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private BinaryNode<T> AddToSubTree(BinaryNode<T> parentNode, T value, int index, Func<T, T, int> сompareTo)
+        private BinaryNode<T> AddToSubTree(BinaryNode<T> currentNode, T value, int index, Func<T, T, int> сompareTo)
         {
-            if (ReferenceEquals(parentNode, null))
+            if (ReferenceEquals(currentNode, null))
                 return new BinaryNode<T>(value, index);
 
-            parentNode = parentNode.Add(value, index, сompareTo);
-            return parentNode;
+            currentNode = currentNode.Add(value, index, сompareTo);
+            return currentNode;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private BinaryNode<T> RemoveFromParent(BinaryNode<T> currentNode, T value, Func<T, T, int> compareTo)
+        {
+            if (ReferenceEquals(currentNode, null))
+                return null;
+
+            return currentNode.Remove(value, compareTo);
         }
     }
 }
