@@ -20,6 +20,9 @@ namespace BinaryTreeCollection.Collection
         public BinaryNode<T> Add(T value, int index, Func<T, T, int> сompareTo)
         {
             var newRoot = this;
+            if (сompareTo(value, Value) == 0)
+                throw new ArgumentException("Node with this value already exists");
+
             if (сompareTo(value, Value) <= 0)
             {
                 LeftNode = AddToSubTree(LeftNode, value, index, сompareTo);
